@@ -44,23 +44,23 @@ class _MediumCardWidgetState extends State<MediumCardWidget> {
   final colorwhite = Colors.white;
 
   bool favColor = false;
-  String Name;
+  String? Name;
 
 
   @override
   Widget build(BuildContext context) {
     final firestoreInstance = FirebaseFirestore.instance;
     var firebaseUser = FirebaseAuth.instance.currentUser;
-    firestoreInstance.collection("userInfo").doc(firebaseUser.uid).get().then((value){
+    firestoreInstance.collection("userInfo").doc(firebaseUser!.uid).get().then((value){
       setState(() {
-        check = value.data()["list"];
+        check = value.data()!["list"];
       });});
 
     listBuilder ()async{
       final firestoreInstance = FirebaseFirestore.instance;
       var firebaseUser = FirebaseAuth.instance.currentUser;
-      firestoreInstance.collection("userInfo").doc(firebaseUser.uid).get().then((value){
-        if(value.data()["list"].contains(Name)==true){
+      firestoreInstance.collection("userInfo").doc(firebaseUser!.uid).get().then((value){
+        if(value.data()!["list"].contains(Name)==true){
 
           firestoreInstance.collection("userInfo")
               .doc(firebaseUser.uid)
@@ -163,7 +163,7 @@ class _MediumCardWidgetState extends State<MediumCardWidget> {
 }
 
 class FadePageRoute extends PageRouteBuilder {
-  final Widget widget;
+  final Widget? widget;
 
   FadePageRoute({this.widget})
       : super(pageBuilder: (
@@ -171,7 +171,7 @@ class FadePageRoute extends PageRouteBuilder {
       Animation<double> animation,
       Animation<double> secondaryAnimation,
       ) {
-    return widget;
+    return widget!;
   }, transitionsBuilder: ((BuildContext context,
       Animation<double> animation,
       Animation<double> secondaryAnimation,

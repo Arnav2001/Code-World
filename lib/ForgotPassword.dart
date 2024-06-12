@@ -3,9 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:toast/toast.dart';
-
-
+import 'package:fluttertoast/fluttertoast.dart';
+// import 'package:toast/toast.dart';
 
 class ResetScreen extends StatefulWidget {
   @override
@@ -13,19 +12,20 @@ class ResetScreen extends StatefulWidget {
 }
 
 class _ResetScreenState extends State<ResetScreen> {
-  String _email;
+  String? _email;
   final auth = FirebaseAuth.instance;
-  Widget buildEmail(){
+  Widget buildEmail() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text('Email',
+        Text(
+          'Email',
           style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold
-          ),),
-        SizedBox(height: 10,),
+              color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(
+          height: 10,
+        ),
         Container(
           alignment: Alignment.centerLeft,
           decoration: BoxDecoration(
@@ -33,18 +33,12 @@ class _ResetScreenState extends State<ResetScreen> {
               borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 6,
-                    offset: Offset(0,2)
-                )
-              ]
-          ),
+                    color: Colors.black26, blurRadius: 6, offset: Offset(0, 2))
+              ]),
           height: 60,
           child: TextField(
             keyboardType: TextInputType.emailAddress,
-            style: TextStyle(
-                color: Colors.black87
-            ),
+            style: TextStyle(color: Colors.black87),
             decoration: InputDecoration(
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.only(top: 14),
@@ -53,11 +47,8 @@ class _ResetScreenState extends State<ResetScreen> {
                   color: Palette.darkOrange,
                 ),
                 hintText: 'Email',
-                hintStyle: TextStyle(
-                    color: Colors.black38
-                )
-            ),
-            onChanged: (value){
+                hintStyle: TextStyle(color: Colors.black38)),
+            onChanged: (value) {
               setState(() {
                 _email = value.trim();
               });
@@ -67,14 +58,18 @@ class _ResetScreenState extends State<ResetScreen> {
       ],
     );
   }
+
   @override
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
-    return  Container(
+    return Container(
       decoration: BoxDecoration(
-          gradient:
-          new SweepGradient(colors: [Palette.lightBlue,Palette.darkBlue, Palette.lightBlue])),
+          gradient: new SweepGradient(colors: [
+        Palette.lightBlue,
+        Palette.darkBlue,
+        Palette.lightBlue
+      ])),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: Stack(
@@ -90,7 +85,10 @@ class _ResetScreenState extends State<ResetScreen> {
                   SizedBox(height: height * 0.08),
                   Text(
                     'reset password'.toUpperCase(),
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold,color: Colors.white),
+                    style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(
@@ -115,23 +113,35 @@ class _ResetScreenState extends State<ResetScreen> {
                   ),
                   Center(
                     child: GestureDetector(
-                      onTap: ()async{
-                        if(_email == null){
-                          Toast.show('Invalid Input',context,gravity: Toast.TOP,duration: Toast.LENGTH_SHORT);
-                        }else{
-                          try{
-                            await auth.sendPasswordResetEmail(email: _email);
+                      onTap: () async {
+                        if (_email == null) {
+                          Fluttertoast.showToast(
+                              msg: 'Invalid Input',
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.BOTTOM,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.red,
+                              textColor: Colors.white,
+                              fontSize: 16.0);
+                        } else {
+                          try {
+                            await auth.sendPasswordResetEmail(email: _email!);
                             Navigator.of(context).pop();
-                          } on FirebaseAuthException catch(error){
-                            Toast.show(error.message,context,gravity: Toast.TOP,duration: Toast.LENGTH_SHORT);
+                          } on FirebaseAuthException catch (error) {
+                            Fluttertoast.showToast(
+                                msg: error.message!,
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.BOTTOM,
+                                timeInSecForIosWeb: 1,
+                                backgroundColor: Colors.red,
+                                textColor: Colors.white,
+                                fontSize: 16.0);
                           }
                         }
-
-
                       },
                       child: Container(
                         padding:
-                        EdgeInsets.symmetric(horizontal: 26, vertical: 10),
+                            EdgeInsets.symmetric(horizontal: 26, vertical: 10),
                         decoration: BoxDecoration(
                             gradient: new LinearGradient(
                                 colors: [Palette.darkBlue, Palette.lightBlue]),
@@ -139,7 +149,7 @@ class _ResetScreenState extends State<ResetScreen> {
                             boxShadow: [
                               BoxShadow(
                                   blurRadius: 4,
-                                  color: Colors.blue[200],
+                                  color: Colors.blue[200]!,
                                   offset: Offset(2, 2))
                             ]),
                         child: Text(
@@ -162,5 +172,4 @@ class _ResetScreenState extends State<ResetScreen> {
       ),
     );
   }
-
 }

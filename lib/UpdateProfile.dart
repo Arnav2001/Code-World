@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:code_world/LoginPage.dart';
 import 'package:code_world/loading.dart';
 import 'package:code_world/palette.dart';
-import 'package:connectivity/connectivity.dart';
+import 'package:code_world/services/internet_checker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class EditProfilePage extends StatefulWidget {
   @override
@@ -19,41 +20,37 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  String name;
-  int phoneNo;
-  String _email="Email";
-  String _image;
-  String _name;
-  int _phone;
+  String? name;
+  int? phoneNo;
+  String? _email="Email";
+  String? _image;
+  String? _name;
+  int ?_phone;
   var imagePic;
-  String ImageUrl;
+  String? ImageUrl;
   bool loading = true;
-  bool internetCheck = true;
+  bool internetCheck = false;
 
+@override
+  void initState() {
+    // TODO: implement initState
 
-  _checkInternetConnectivity()async{
-    var result = await Connectivity().checkConnectivity();
-    setState(() {
-      if(result == ConnectivityResult.wifi|| result == ConnectivityResult.mobile){
-        setState(() {
-          internetCheck = false;
-        });
-      }else{
-        internetCheck = true;
-      }
+    InternetChecker().then((value)=>{
+      setState(() {
+        internetCheck = value;
+      })
     });
+    super.initState();
   }
+
 
   @override
   Widget build(BuildContext context) {
 
-      _checkInternetConnectivity();
-
-
       retrievingData();
 
 
-    return internetCheck?AdvanceCustomAlertInternet():loading?Loading():Scaffold(
+    return internetCheck == false?AdvanceCustomAlertInternet():loading?Loading():Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 1,
@@ -78,8 +75,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
           },
           child: NotificationListener<OverscrollIndicatorNotification>(
             onNotification: (OverscrollIndicatorNotification overscrollIndicatorNotification){
-              overscrollIndicatorNotification.disallowGlow();
-              return;
+              overscrollIndicatorNotification.disallowIndicator();
+              return true;
             },
             child: ListView(
               children: [
@@ -97,7 +94,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           borderRadius: BorderRadius.circular(100),
                           child: FadeInImage.assetNetwork(
                             placeholder: 'assets/profileImg.jpg',
-                            image: ImageUrl== null?_image:ImageUrl,
+                            image: (ImageUrl == null || ImageUrl!.isEmpty) ? _image! : ImageUrl!,
                             fit:BoxFit.cover,) ,
                         ),
                         decoration: BoxDecoration(
@@ -152,10 +149,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    OutlineButton(
-                      padding: EdgeInsets.symmetric(horizontal: 50),
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(horizontal: 50),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20)),
+                      ),
+                      
                       onPressed: () {Navigator.of(context).pop();},
                       child: Text("CANCEL",
                           style: TextStyle(
@@ -163,22 +163,25 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               letterSpacing: 2.2,
                               color: Colors.black)),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () {
                         var firebaseUser = FirebaseAuth.instance.currentUser;
                         final firestoreInstance = FirebaseFirestore.instance;
                         if(name == null ){name = _name;}
                         if(phoneNo == null){phoneNo = _phone;}
                         firestoreInstance.collection("userInfo")
-                        .doc(firebaseUser.uid)
+                        .doc(firebaseUser!.uid)
                         .update({"name": name, "phoneNo":phoneNo, "image":ImageUrl== null?_image:ImageUrl}).then((_) => print("Success"));
                         Navigator.of(context).pop();
                       },
-                      color: Palette.darkOrange,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Palette.darkOrange,
                       padding: EdgeInsets.symmetric(horizontal: 50),
                       elevation: 2,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20)),
+                      ),
+                      
                       child: Text(
                         "SAVE",
                         style: TextStyle(
@@ -197,7 +200,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
   Widget buildText(){
-    return Text(_email,
+    return Text(_email!,
       style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.bold,
@@ -237,15 +240,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  Future retrievingData(){
+  void retrievingData(){
     final firestoreInstance = FirebaseFirestore.instance;
     var firebaseUser = FirebaseAuth.instance.currentUser;
-    firestoreInstance.collection("userInfo").doc(firebaseUser.uid).get().then((value){
+    firestoreInstance.collection("userInfo").doc(firebaseUser!.uid).get().then((value){
       setState(() {
-        _image = value.data()["image"];
-        _email = value.data()["email"];
-        _name = value.data()["name"];
-        _phone = value.data()["phoneNo"];
+        _image = value.data()!["image"];
+        _email = value.data()!["email"];
+        _name = value.data()!["name"];
+        _phone = value.data()!["phoneNo"];
         loading = false;
       });
     });
@@ -255,7 +258,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final _picker = ImagePicker();
     PickedFile image;
     final FirebaseAuth auth= FirebaseAuth.instance;
-    final User user = auth.currentUser;
+    final User user = auth.currentUser!;
     final uid = user.uid;
     //Check Permissions
     await Permission.photos.request();
@@ -266,10 +269,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
       //Select Image
 
-      image = await _picker.getImage(source: ImageSource.gallery);
+      XFile? xFile = await _picker.pickImage(source: ImageSource.gallery);
+      image = PickedFile(xFile!.path);
+
       var file = File(image.path);
 
-      if (image != null){
+      if (image != ""){
 
         //Upload to Firebase
 
@@ -310,8 +315,7 @@ class AdvanceCustomAlertInternet extends StatelessWidget{
               borderRadius: BorderRadius.circular(4)
           ),
           child: Stack(
-            overflow: Overflow.visible,
-            alignment: Alignment.topCenter,
+            clipBehavior: Clip.none, alignment: Alignment.topCenter,
             children: [
               Container(
                 height: 200,
@@ -326,12 +330,12 @@ class AdvanceCustomAlertInternet extends StatelessWidget{
                       Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children:[
-                            FlatButton(onPressed: (){
+                            ElevatedButton(onPressed: (){
                               SystemNavigator.pop();
                             },
                               child: Text('Exit',style: TextStyle(color: Palette.darkBlue),),),
-                            FlatButton(onPressed: ()async{
-                              AppSettings.openWIFISettings();
+                            ElevatedButton(onPressed: ()async{
+                              AppSettings.openAppSettings();
                             },
                               child: Text('Open Settings', style: TextStyle(color: Palette.darkBlue),),),
                           ]),

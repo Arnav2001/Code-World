@@ -20,7 +20,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String Email = "Email";
   int PhoneNo = 100;
   var image;
-  String ImageUrl;
+  String? ImageUrl;
   bool loading = true;
 
   @override
@@ -31,8 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return loading?Loading():Scaffold(
 
       appBar: AppBar(
-          backwardsCompatibility: false,
-        elevation: 0.0,
+          elevation: 0.0,
           backgroundColor: Palette.darkOrange,
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
@@ -103,7 +102,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       borderRadius: BorderRadius.circular(100),
                       child: FadeInImage.assetNetwork(
                           placeholder: 'assets/profileImg.jpg',
-                          image: ImageUrl,fit:BoxFit.cover,) ,
+                          image: ImageUrl!,fit:BoxFit.cover,) ,
                     ),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.white,width: 5),
@@ -246,15 +245,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ],
     );
   }
-  Future retrievingData(){
+  void retrievingData(){
     final firestoreInstance = FirebaseFirestore.instance;
     var firebaseUser = FirebaseAuth.instance.currentUser;
-    firestoreInstance.collection("userInfo").doc(firebaseUser.uid).get().then((value){
+    firestoreInstance.collection("userInfo").doc(firebaseUser!.uid).get().then((value){
       setState(() {
-        Name = value.data()["name"];
-        PhoneNo = value.data()["phoneNo"];
-        Email = value.data()["email"];
-        ImageUrl = value.data()["image"];
+        Name = value.data()!["name"];
+        PhoneNo = value.data()!["phoneNo"];
+        Email = value.data()!["email"];
+        ImageUrl = value.data()!["image"];
         loading = false;
       });
     });

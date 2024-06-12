@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class LoginTitle extends StatelessWidget {
-  const LoginTitle({@required this.title});
+  const LoginTitle({required this.title});
 
   final String title;
 

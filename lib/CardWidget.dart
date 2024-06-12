@@ -54,7 +54,7 @@ List check = [];
   final colorwhite = Colors.white;
 
   bool favColor = false;
-  String Name;
+  String? Name;
   bool loading = true;
 
 
@@ -62,17 +62,17 @@ List check = [];
   Widget build(BuildContext context) {
     final firestoreInstance = FirebaseFirestore.instance;
     var firebaseUser = FirebaseAuth.instance.currentUser;
-    firestoreInstance.collection("userInfo").doc(firebaseUser.uid).get().then((value){
+    firestoreInstance.collection("userInfo").doc(firebaseUser!.uid).get().then((value){
       setState(() {
-        check = value.data()["list"];
+        check = value.data()!["list"];
         loading = false;
       });});
 
     listBuilder ()async{
       final firestoreInstance = FirebaseFirestore.instance;
       var firebaseUser = FirebaseAuth.instance.currentUser;
-      firestoreInstance.collection("userInfo").doc(firebaseUser.uid).get().then((value){
-        if(value.data()["list"].contains(Name)==true){
+      firestoreInstance.collection("userInfo").doc(firebaseUser!.uid).get().then((value){
+        if(value.data()!["list"].contains(Name)==true){
 
           firestoreInstance.collection("userInfo")
               .doc(firebaseUser.uid)

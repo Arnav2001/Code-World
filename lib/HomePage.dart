@@ -10,7 +10,7 @@ import 'package:code_world/Profile.dart';
 import 'package:code_world/SearchBar.dart';
 import 'package:code_world/loading.dart';
 import 'package:code_world/palette.dart';
-import 'package:connectivity/connectivity.dart';
+import 'package:code_world/services/internet_checker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -18,21 +18,22 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'CardWidget.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
 }
-String _image;
-String _name;
-String _email;
+String? _image;
+String? _name;
+String? _email;
 class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin{
-  String name;
-  int phoneNo;
+  String? name;
+  int? phoneNo;
 
   final colorstheme = Palette.darkBlue;
 
-  TabController _tabController;
+  TabController? _tabController;
   void showAlertDialog(BuildContext context){
     showDialog(context: context,builder: (BuildContext context)=>AdvanceCustomAlert());
   }
@@ -42,27 +43,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
    });
   }
   bool loading = true;
+  bool internetAvailable = false;
 
-  bool internetCheck = true;
 
-
-  _checkInternetConnectivity()async{
-    var result = await Connectivity().checkConnectivity();
-    setState(() {
-      if(result == ConnectivityResult.wifi|| result == ConnectivityResult.mobile){
-        setState(() {
-          internetCheck = false;
-        });
-      }else{
-        internetCheck = true;
-      }
-    });
-  }
 
   @override
   void initState() {
     _tabController = new TabController(length: 3, vsync: this, initialIndex: 0)
       ..addListener(() {});
+
+      InternetChecker().then((value)=>{
+        setState(() {
+          internetAvailable = value;
+        })
+      });
     super.initState();
 
    ;
@@ -70,10 +64,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   @override
   void dispose() {
     super.dispose();
-    _checkInternetConnectivity();
   }
 
   Icon menuIcon = new Icon(Icons.more_vert,color: Palette.darkBlue,);
+
   _launchURLBrowser() async {
     const url = 'https://play.google.com/store/apps/details?id=com.me.code_world';
     if (await canLaunch(url)) {
@@ -82,11 +76,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       throw 'Could not launch $url';
     }
   }
+
   @override
   Widget build(BuildContext context) {
     retrievingData();
-      _checkInternetConnectivity();
-      return internetCheck?AdvanceCustomAlertInternet():loading? Loading():Scaffold(
+      return 
+      internetAvailable == false?AdvanceCustomAlertInternet():
+      loading? Loading():Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(color: Color(0xcc092E34)),
 
@@ -127,7 +123,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         borderRadius: BorderRadius.circular(100),
                         child: FadeInImage.assetNetwork(
                           placeholder: 'assets/profileImg.jpg',
-                          image: _image,
+                          image: _image!,
                           fit:BoxFit.cover,) ,
                       ),
                       decoration: BoxDecoration(
@@ -148,13 +144,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     SizedBox(height: 10,),
                     Padding(
                       padding: const EdgeInsets.all(4.0),
-                      child: Text(_name,style: TextStyle(
+                      child: Text(_name!,style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                       ),),
                     ),
-                    Text(_email,style: TextStyle(
+                    Text(_email!,style: TextStyle(
                         fontSize: 15,
                         color: Colors.white
                     ),)
@@ -224,20 +220,31 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 color: Color(0xcc092E34)),
             child: TabBar(
                 isScrollable: true,
-                indicatorPadding: EdgeInsets.all(10),
+                indicatorPadding: EdgeInsets.only(top: 4,bottom: 4),
                 labelColor: Colors.white,
                 unselectedLabelColor: Colors.white,
+            
+                tabAlignment: TabAlignment.center,
                 labelStyle: TextStyle(fontSize: 20),
                 labelPadding:
-                EdgeInsets.only(left: 35, right: 35, top: 10, bottom: 10),
+                EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
                 indicator: BoxDecoration(
                     color: Palette.darkBlue,
                     borderRadius: BorderRadius.circular(20)),
                 controller: _tabController,
                 tabs: [
-                  Text('Easy'),
-                  Text('Medium'),
-                  Text('Hard'),
+                  Padding(
+                    padding: const EdgeInsets.only(left:10.0,right: 10.0),
+                    child: Text('Easy'),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left:10.0,right: 10.0),
+                    child: Text('Medium'),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left:10.0,right: 10.0),
+                    child: Text('Hard'),
+                  ),
                 ]),
           ),
           Expanded(
@@ -252,15 +259,15 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       ),
     );
   }
-  Future retrievingData(){
+  void retrievingData(){
     final firestoreInstance = FirebaseFirestore.instance;
     var firebaseUser = FirebaseAuth.instance.currentUser;
-    firestoreInstance.collection("userInfo").doc(firebaseUser.uid).get().then((value){
+    firestoreInstance.collection("userInfo").doc(firebaseUser!.uid).get().then((value){
       setState(() {
         loading = false;
-        _image = value.data()["image"];
-        _name = value.data()["name"];
-        _email = value.data()["email"];
+        _image = value.data()!["image"];
+        _name = value.data()!["name"];
+        _email = value.data()!["email"];
       });
     });
   }
@@ -273,7 +280,7 @@ class AdvanceCustomAlert extends StatelessWidget{
       borderRadius: BorderRadius.circular(4)
     ),
     child: Stack(
-      overflow: Overflow.visible,
+      clipBehavior: Clip.none,
       alignment: Alignment.topCenter,
       children: [
         Container(
@@ -289,12 +296,12 @@ class AdvanceCustomAlert extends StatelessWidget{
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                      children:[
-                        FlatButton(onPressed: (){
+                        ElevatedButton(onPressed: (){
                           Navigator.pop(context);
                         },
                     child: Text('NO',style: TextStyle(color: Palette.darkBlue),),),
 
-                       FlatButton(onPressed: ()async{
+                       ElevatedButton(onPressed: ()async{
                          SharedPreferences prefs = await SharedPreferences.getInstance();
                          prefs.remove('remember');
                          Navigator.popUntil(context, (route) => route.isFirst);
@@ -336,7 +343,7 @@ class AdvanceCustomAlertInternet extends StatelessWidget{
             borderRadius: BorderRadius.circular(4)
         ),
         child: Stack(
-          overflow: Overflow.visible,
+          clipBehavior: Clip.none, 
           alignment: Alignment.topCenter,
           children: [
             Container(
@@ -352,12 +359,12 @@ class AdvanceCustomAlertInternet extends StatelessWidget{
                     Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children:[
-                          FlatButton(onPressed: (){
+                          ElevatedButton(onPressed: (){
                             SystemNavigator.pop();
                           },
                             child: Text('Exit',style: TextStyle(color: Palette.darkBlue),),),
-                          FlatButton(onPressed: ()async{
-                            AppSettings.openWIFISettings();
+                          ElevatedButton(onPressed: ()async{
+                            AppSettings.openAppSettings();
                           },
                             child: Text('Open Settings', style: TextStyle(color: Palette.darkBlue),),),
                         ]),

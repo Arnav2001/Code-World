@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'InfoProvider.dart';
 
 class DataSearch extends SearchDelegate<String> {
-  String TopicName;
+  String? TopicName;
   bool cross=false;
   final List topics=[
     "Header File",
@@ -68,7 +68,7 @@ class DataSearch extends SearchDelegate<String> {
             icon: AnimatedIcons.menu_arrow,
             progress: transitionAnimation),
         onPressed:(){
-          close(context, null);
+          close(context,'');
         });
   }
 
@@ -83,7 +83,7 @@ class DataSearch extends SearchDelegate<String> {
         TopicName= suggestionList[index];
         int indexes = topics.indexOf(TopicName);
         SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setString('info', TopicName);
+          prefs.setString('info', TopicName!);
         Navigator.of(context).push(MaterialPageRoute(builder: (context)=> InfoProvider()));
       } ,
       leading: Icon(Icons.code),
@@ -111,7 +111,7 @@ class DataSearch extends SearchDelegate<String> {
         TopicName= suggestionList[index];
         int indexes = topics.indexOf(TopicName);
         SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setString('info', TopicName);
+          prefs.setString('info', TopicName!);
 
         Navigator.of(context).push(MaterialPageRoute(builder: (context)=> InfoProvider()));
       } ,

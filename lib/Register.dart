@@ -3,13 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:toast/toast.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'VerifyScreen.dart';
 import 'database.dart';
 import 'title.dart';
 
 class Register extends StatefulWidget {
-  const Register({Key key, this.onSignInPressed}) : super(key: key);
+  const Register({required this.onSignInPressed, required ValueKey<String> key}) : super(key: key);
 
   final VoidCallback onSignInPressed;
 
@@ -18,17 +18,17 @@ class Register extends StatefulWidget {
 }
 
 class _RegisterState extends State<Register> {
-  String _name;
-  String _phoneNo;
-  String _email;
-  String _password;
+  String? _name;
+  String? _phoneNo;
+  String ?_email;
+  String ?_password;
   String image="";
   List list=[];
   bool isVerified = false;
 
   var number;
 
-  String _reEnterPassword;
+  String? _reEnterPassword;
   final auth = FirebaseAuth.instance;
 
   @override
@@ -136,7 +136,7 @@ class _RegisterState extends State<Register> {
               onChanged: (value){
                 setState(() {
                   _phoneNo = value.trim();
-                  number = int.parse(_phoneNo);
+                  number = int.parse(_phoneNo!);
                 });
               },
             ),
@@ -316,8 +316,8 @@ class _RegisterState extends State<Register> {
       alignment: Alignment.topCenter,
       child: NotificationListener<OverscrollIndicatorNotification>(
         onNotification: (OverscrollIndicatorNotification overscrollIndicatorNotification){
-          overscrollIndicatorNotification.disallowGlow();
-          return;
+          overscrollIndicatorNotification.disallowIndicator();
+          return true;
         },
         child: ListView(
           physics: new BouncingScrollPhysics(),
@@ -371,7 +371,7 @@ class _RegisterState extends State<Register> {
 
                             ),
                             child: IconButton(onPressed: (){
-                              signUp(_email, _password);
+                              signUp(_email!, _password!);
                             },
                               color: Colors.white,
                               icon: Icon(Icons.arrow_forward),),
@@ -411,19 +411,43 @@ class _RegisterState extends State<Register> {
   }
   signUp(String _email,String _password) async{
     if(_email == null || _password == null ||_name == null ||_phoneNo ==null || _reEnterPassword == null){
-      Toast.show('Fill All Entries',context,gravity: Toast.TOP,duration: Toast.LENGTH_SHORT);
+       Fluttertoast.showToast(
+        msg: "Fill All Entries",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
     }else{
       if( _password != _reEnterPassword){
-        Toast.show('Password Does Not Match',context,gravity: Toast.TOP,duration: Toast.LENGTH_SHORT);
+         Fluttertoast.showToast(
+        msg: "Password Does Not Match",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
       }else{
         try{
           await auth.createUserWithEmailAndPassword(email: _email, password: _password).then(
                   (value) async{Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => VerifyScreen()));
-                  User user = auth.currentUser;
-                  await DatabaseService(uid: user.uid).updateUserData(_name, _email, number,image,list,isVerified);});
+                  User? user = auth.currentUser;
+                  await DatabaseService(uid: user!.uid).updateUserData(_name!, _email, number,image,list,isVerified);});
 
         } on FirebaseAuthException catch(error){
-          Toast.show(error.message,context,gravity: Toast.TOP,duration: Toast.LENGTH_SHORT);
+          Fluttertoast.showToast(
+        msg: error.message!,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
         }
       }
     }

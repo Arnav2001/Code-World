@@ -14,7 +14,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
-AnimationController _controller;
+AnimationController? _controller;
 ValueNotifier<bool> showSignInPage = ValueNotifier<bool>(true);
 @override
   void initState() {
@@ -23,7 +23,7 @@ ValueNotifier<bool> showSignInPage = ValueNotifier<bool>(true);
   }
   @override
   void dispose() {
-    _controller.dispose();
+    _controller!.dispose();
     super.dispose();
   }
 
@@ -35,7 +35,7 @@ ValueNotifier<bool> showSignInPage = ValueNotifier<bool>(true);
           SizedBox.expand(
             child: CustomPaint(
               painter: BackgroundPainter(
-                animation: _controller.view,
+                animation: _controller!.view,
               ),
             ),
           ),
@@ -64,14 +64,14 @@ ValueNotifier<bool> showSignInPage = ValueNotifier<bool>(true);
                         key: const ValueKey('SignIn'),
                         onRegisterClicked: () {
                           showSignInPage.value = false;
-                          _controller.forward();
+                          _controller!.forward();
                         },
                       )
                           : Register(
                         key: const ValueKey('Register'),
                         onSignInPressed: () {
                           showSignInPage.value = true;
-                          _controller.reverse();
+                          _controller!.reverse();
                         },
                       ),
                     ),

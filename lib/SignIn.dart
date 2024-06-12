@@ -3,17 +3,20 @@ import 'package:code_world/palette.dart';
 import 'package:code_world/title.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:toast/toast.dart';
 import 'ForgotPassword.dart';
 import 'HomePage.dart';
 
 
 class SignIn extends StatefulWidget {
 
-  const SignIn({Key key,
-    @required this.onRegisterClicked,
+  const SignIn({
+    Key? key,
+    required this.onRegisterClicked,
   }) : super(key: key);
+  
   final VoidCallback onRegisterClicked;
 
 
@@ -24,8 +27,8 @@ class SignIn extends StatefulWidget {
 class _SignInState extends State<SignIn> with SingleTickerProviderStateMixin{
 
   final auth = FirebaseAuth.instance;
-  String _email;
-  String _password;
+  String? _email;
+  String? _password;
   bool isRememberMe= false;
 
 
@@ -146,11 +149,13 @@ class _SignInState extends State<SignIn> with SingleTickerProviderStateMixin{
       return Container(
         alignment: Alignment.centerRight,
         width: width,
-        child: FlatButton(
+        child: TextButton(
           onPressed: (){
             Navigator.of(context).push(MaterialPageRoute(builder: (context)=> ResetScreen()));
           },
-          padding: EdgeInsets.only(right: width/30),
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.only(right: width/30),
+          ),
           child: Text(
             'Forgot Password?',
             style: TextStyle(
@@ -175,7 +180,7 @@ class _SignInState extends State<SignIn> with SingleTickerProviderStateMixin{
                 activeColor: Palette.darkBlue,
                 onChanged: (value){
                   setState(() {
-                    isRememberMe = value;
+                    isRememberMe = value!;
                   });
                 },
               ),
@@ -210,8 +215,8 @@ class _SignInState extends State<SignIn> with SingleTickerProviderStateMixin{
                 flex: 4,
                   child: NotificationListener<OverscrollIndicatorNotification>(
                     onNotification: (OverscrollIndicatorNotification overscrollIndicatorNotification){
-                      overscrollIndicatorNotification.disallowGlow();
-                      return;
+                      overscrollIndicatorNotification.disallowIndicator();
+                      return true;
                     },
                     child: SingleChildScrollView(
                         child: Container(
@@ -256,7 +261,7 @@ class _SignInState extends State<SignIn> with SingleTickerProviderStateMixin{
 
                                       ),
                                       child: IconButton(onPressed: (){
-                                        signIn(_email, _password);
+                                        signIn(_email!, _password!);
                                       },
                                         color: Colors.white,
                                         icon: Icon(Icons.arrow_forward),),
@@ -297,25 +302,41 @@ class _SignInState extends State<SignIn> with SingleTickerProviderStateMixin{
 
   signIn(String _email,String _password) async{
     bool isVerified ;
-    if(_email == null || _password == null){
-      Toast.show('Invalid Input',context,gravity: Toast.TOP,duration: Toast.LENGTH_SHORT);
+    if(_email == '' || _password == ''){
+      Fluttertoast.showToast(
+        msg: "Invalid Input",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
     }else{
       final firestoreInstance = FirebaseFirestore.instance;
       var firebaseUser = FirebaseAuth.instance.currentUser;
       try{
         final auth =FirebaseAuth.instance;
         await auth.signInWithEmailAndPassword(email: _email, password: _password);
-        firestoreInstance.collection("userInfo").doc(firebaseUser.uid).get().then((value)async{
-          print('value is' + value.data()["email"]);
-          isVerified = value.data()["isVerified"];
-          if ((value.data()["isVerified"]) == true ){
+        firestoreInstance.collection("userInfo").doc(firebaseUser!.uid).get().then((value)async{
+          
+          isVerified = value.data()!["isVerified"];
+          if ((value.data()!["isVerified"]) == true ){
             SharedPreferences prefs = await SharedPreferences.getInstance();
             prefs.setBool('remember', isRememberMe);
-            Navigator.of(context).pushReplacement(
+            Navigator.of(context).pushReplacement( 
                 MaterialPageRoute(builder: (context) => HomePage()));
           }
           else{
-            Toast.show('Your have not verified your email register again',context,gravity: Toast.TOP,duration: Toast.LENGTH_LONG);
+            Fluttertoast.showToast(
+        msg: "Your have not verified your email register again",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
             firestoreInstance.collection("userInfo").doc(firebaseUser.uid).delete().then((_) => print('deleted successfully!!'));
             firebaseUser.delete();
           }
@@ -323,9 +344,17 @@ class _SignInState extends State<SignIn> with SingleTickerProviderStateMixin{
 
         });
       } on FirebaseAuthException catch(error){
-        Toast.show(error.message,context,gravity: Toast.TOP,duration: Toast.LENGTH_LONG);
+        Fluttertoast.showToast(
+        msg: error.message!,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
       }
-      print('user is: ${firebaseUser.uid}');
+      print('user is: ${firebaseUser!.uid}');
 
 
 

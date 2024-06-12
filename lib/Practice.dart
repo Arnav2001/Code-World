@@ -1826,7 +1826,7 @@ class _PracticeState extends State<Practice> {
                           Checkbox(
                               value: value2, onChanged: (val){
                             setState(() {
-                              this.value2 = val;
+                              this.value2 = val!;
                               print(val);
                             });
                           }),
@@ -1838,7 +1838,7 @@ class _PracticeState extends State<Practice> {
                           Checkbox(
                               value: value3, onChanged: (value){
                             setState(() {
-                              this.value3 = value;
+                              this.value3 = value!;
                             });
                           }),
                           Text('Matrix',style: TextStyle(fontSize: 20),)
@@ -1849,7 +1849,7 @@ class _PracticeState extends State<Practice> {
                           Checkbox(
                               value: value4, onChanged: (value){
                             setState(() {
-                              this.value4 = value;
+                              this.value4 = value!;
                             });
                           }),
                           Text('String',style: TextStyle(fontSize: 20),)
@@ -1860,7 +1860,7 @@ class _PracticeState extends State<Practice> {
                           Checkbox(
                               value: value5, onChanged: (value){
                             setState(() {
-                              this.value5 = value;
+                              this.value5 = value!;
                             });
                           }),
                           Text('Searching & Sorting',style: TextStyle(fontSize: 20),)
@@ -1871,7 +1871,7 @@ class _PracticeState extends State<Practice> {
                           Checkbox(
                               value: value6, onChanged: (value){
                             setState(() {
-                              this.value6 = value;
+                              this.value6 = value!;
                             });
                           }),
                           Text('LinkedList',style: TextStyle(fontSize: 20),)
@@ -1882,7 +1882,7 @@ class _PracticeState extends State<Practice> {
                           Checkbox(
                               value: value7, onChanged: (value){
                             setState(() {
-                              this.value7 = value;
+                              this.value7 = value!;
                             });
                           }),
                           Text('Binary Trees',style: TextStyle(fontSize: 20),)
@@ -1893,7 +1893,7 @@ class _PracticeState extends State<Practice> {
                           Checkbox(
                               value: value8, onChanged: (value){
                             setState(() {
-                              this.value8 = value;
+                              this.value8 = value!;
                             });
                           }),
                           Text('Binary Search Trees',style: TextStyle(fontSize: 20),)
@@ -1904,7 +1904,7 @@ class _PracticeState extends State<Practice> {
                           Checkbox(
                               value: value9, onChanged: (value){
                             setState(() {
-                              this.value9 = value;
+                              this.value9 = value!;
                             });
                           }),
                           Text('Greedy',style: TextStyle(fontSize: 20),)
@@ -1915,7 +1915,7 @@ class _PracticeState extends State<Practice> {
                           Checkbox(
                               value: value10, onChanged: (value){
                             setState(() {
-                              this.value10 = value;
+                              this.value10 = value!;
                             });
                           }),
                           Text('BackTracking',style: TextStyle(fontSize: 20),)
@@ -1926,7 +1926,7 @@ class _PracticeState extends State<Practice> {
                           Checkbox(
                               value: value11, onChanged: (value){
                             setState(() {
-                              this.value11 = value;
+                              this.value11 = value!;
                             });
                           }),
                           Text('Stacks & Queues',style: TextStyle(fontSize: 20),)
@@ -1937,7 +1937,7 @@ class _PracticeState extends State<Practice> {
                           Checkbox(
                               value: value12, onChanged: (value){
                             setState(() {
-                              this.value12 = value;
+                              this.value12 = value!;
                             });
                           }),
                           Text('Heap',style: TextStyle(fontSize: 20),)
@@ -1948,7 +1948,7 @@ class _PracticeState extends State<Practice> {
                           Checkbox(
                               value: value13, onChanged: (value){
                             setState(() {
-                              this.value13 = value;
+                              this.value13 = value!;
                             });
                           }),
                           Text('Graph',style: TextStyle(fontSize: 20),)
@@ -1959,7 +1959,7 @@ class _PracticeState extends State<Practice> {
                           Checkbox(
                               value: value14, onChanged: (value){
                             setState(() {
-                              this.value14 = value;
+                              this.value14 = value!;
                             });
                           }),
                           Text('Trie',style: TextStyle(fontSize: 20),)
@@ -1970,7 +1970,7 @@ class _PracticeState extends State<Practice> {
                           Checkbox(
                               value: value15, onChanged: (value){
                             setState(() {
-                              this.value15 = value;
+                              this.value15 = value!;
                             });
                           }),
                           Text('Dynamic Programming',style: TextStyle(fontSize: 20),)
@@ -1981,7 +1981,7 @@ class _PracticeState extends State<Practice> {
                           Checkbox(
                               value: value16, onChanged: (value){
                             setState(() {
-                              this.value16 = value;
+                              this.value16 = value!;
                             });
                           }),
                           Text('Bit Manipulation',style: TextStyle(fontSize: 20),)

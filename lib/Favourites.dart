@@ -2,17 +2,16 @@ import 'package:app_settings/app_settings.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:code_world/loading.dart';
 import 'package:code_world/palette.dart';
-import 'package:connectivity/connectivity.dart';
+import 'package:code_world/services/internet_checker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'InfoProvider.dart';
 
 class FavouritePage extends StatefulWidget {
-  const FavouritePage({Key key}) : super(key: key);
 
   @override
   _FavouritePageState createState() => _FavouritePageState();
@@ -20,9 +19,9 @@ class FavouritePage extends StatefulWidget {
 
 class _FavouritePageState extends State<FavouritePage> {
   List FavList= [];
-  bool fav;
-  int count;
-  String Name;
+  bool? fav;
+  int? count;
+  String? Name;
   List data = [
     {"color": Color(0xfff3842b)},
     {"color": Color(0xffda2c7d)},
@@ -100,33 +99,32 @@ class _FavouritePageState extends State<FavouritePage> {
     "Heaps",
   ];
 
-  int indexes;
+  int? indexes;
 bool loading = true;
-  bool internetCheck = true;
+  bool internetCheck = false;
 
 
-  _checkInternetConnectivity()async{
-    var result = await Connectivity().checkConnectivity();
-    setState(() {
-      if(result == ConnectivityResult.wifi|| result == ConnectivityResult.mobile){
-        setState(() {
-          internetCheck = false;
-        });
-      }else{
-        internetCheck = true;
-      }
+  @override
+  void initState() {
+    // TODO: implement initState
+    InternetChecker().then((value)=>{
+      setState(() {
+        internetCheck = value;
+      })
     });
+    super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
   var height = MediaQuery.of(context).size.height;
   var width = MediaQuery.of(context).size.width;
-      _checkInternetConnectivity();
+      // _checkInternetConnectivity();
     listBuilder ()async{
       final firestoreInstance = FirebaseFirestore.instance;
       var firebaseUser = FirebaseAuth.instance.currentUser;
-      firestoreInstance.collection("userInfo").doc(firebaseUser.uid).get().then((value){
-        if(value.data()["list"].contains(Name)==true){
+      firestoreInstance.collection("userInfo").doc(firebaseUser!.uid).get().then((value){
+        if(value.data()!["list"].contains(Name)==true){
 
           firestoreInstance.collection("userInfo")
               .doc(firebaseUser.uid)
@@ -148,14 +146,14 @@ bool loading = true;
     final firestoreInstance = FirebaseFirestore.instance;
     var firebaseUser = FirebaseAuth.instance.currentUser;
 
-    firestoreInstance.collection("userInfo").doc(firebaseUser.uid).get().then((value){
+    firestoreInstance.collection("userInfo").doc(firebaseUser!.uid).get().then((value){
     setState(() {
       loading = false;
-      fav = (value.data()["list"].isEmpty)?false:true;
-      FavList =value.data()["list"];
+      fav = (value.data()!["list"].isEmpty)?false:true;
+      FavList =value.data()!["list"];
     });
     });
-    return internetCheck?AdvanceCustomAlertInternet():loading?Loading():Scaffold(
+    return internetCheck == false?AdvanceCustomAlertInternet():loading?Loading():Scaffold(
       appBar:AppBar(
 
         backgroundColor: Colors.white,
@@ -170,7 +168,7 @@ bool loading = true;
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
 
-        body:!fav? Container(
+        body:!fav! ? Container(
           height: height,
           width: width,
           color: Colors.white,
@@ -288,7 +286,7 @@ bool loading = true;
                             Name = FavList[index];
                           });
                           SharedPreferences prefs = await SharedPreferences.getInstance();
-                          prefs.setString('info', Name);
+                          prefs.setString('info', Name!);
                           Navigator.of(context).push(MaterialPageRoute(builder: (context)=> InfoProvider()));},
                       );
                     },
@@ -320,7 +318,7 @@ class AdvanceCustomAlertInternet extends StatelessWidget{
               borderRadius: BorderRadius.circular(4)
           ),
           child: Stack(
-            overflow: Overflow.visible,
+            clipBehavior: Clip.none,
             alignment: Alignment.topCenter,
             children: [
               Container(
@@ -336,12 +334,12 @@ class AdvanceCustomAlertInternet extends StatelessWidget{
                       Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children:[
-                            FlatButton(onPressed: (){
+                            ElevatedButton(onPressed: (){
                               SystemNavigator.pop();
                             },
                               child: Text('Exit',style: TextStyle(color: Palette.darkBlue),),),
-                            FlatButton(onPressed: ()async{
-                              AppSettings.openWIFISettings();
+                            ElevatedButton(onPressed: ()async{
+                              AppSettings.openAppSettings(); //new
                             },
                               child: Text('Open Settings', style: TextStyle(color: Palette.darkBlue),),),
                           ]),

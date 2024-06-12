@@ -1,15 +1,26 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:code_world/Favourites.dart';
 import 'package:code_world/loading.dart';
-import 'package:connectivity/connectivity.dart';
+import 'package:code_world/services/internet_checker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-
+import 'package:connectivity_plus/connectivity_plus.dart';
 class _InfoProviderState extends State<InfoProvider>{
+  bool internetCheck = false;
+@override
+  void initState() {
+    // TODO: implement initState
+    InternetChecker().then((value)=>{
+      setState(() {
+        internetCheck = value;
+      })
+    });
+    super.initState();
+  }
   @override
   List data = [
     {"color": Color(0xfff3842b)},
@@ -2192,32 +2203,22 @@ int main()
   ];
 
   List check=[];
-  String Name;
-  int index;
-  bool internetCheck = true;
+  String? Name;
+  int? index;
 
 
-  _checkInternetConnectivity()async{
-    var result = await Connectivity().checkConnectivity();
-    setState(() {
-      if(result == ConnectivityResult.wifi|| result == ConnectivityResult.mobile){
-        setState(() {
-          internetCheck = false;
-        });
-      }else{
-        internetCheck = true;
-      }
-    });
-  }
   _launchURLBrowser() async {
-     String UrlTemp = url[index];
+     String UrlTemp = url[index!];
     if (await canLaunch(UrlTemp)) {
       await launch(UrlTemp);
     } else {
       throw 'Could not launch $url';
     }
   }
+
+
   Widget build(BuildContext context) {
+
 
     final  height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
@@ -2225,8 +2226,8 @@ int main()
     listBuilder ()async{
       final firestoreInstance = FirebaseFirestore.instance;
       var firebaseUser = FirebaseAuth.instance.currentUser;
-      firestoreInstance.collection("userInfo").doc(firebaseUser.uid).get().then((value){
-        if(value.data()["list"].contains(Name)==true){
+      firestoreInstance.collection("userInfo").doc(firebaseUser!.uid).get().then((value){
+        if(value.data()!["list"].contains(Name)==true){
 
           firestoreInstance.collection("userInfo")
               .doc(firebaseUser.uid)
@@ -2243,16 +2244,19 @@ int main()
         }
       });
     }
+
     final firestoreInstance = FirebaseFirestore.instance;
     var firebaseUser = FirebaseAuth.instance.currentUser;
-    firestoreInstance.collection("userInfo").doc(firebaseUser.uid).get().then((value){
+    firestoreInstance.collection("userInfo").doc(firebaseUser!.uid).get().then((value){
+     
       setState(() {
-        check = value.data()["list"];
+        check = value.data()!["list"];
         loading = false;
       });});
+
     @override
     Widget buildShareButton()=> FloatingActionButton(
-        child:(!check.contains((topic[index])))?Icon(
+        child:(!check.contains((topic[index!])))?Icon(
           Icons.favorite_border,
           color: Colors.white, size: 30,
         ):Icon(Icons.favorite,
@@ -2263,52 +2267,51 @@ int main()
             bottomRight: Radius.circular(35),
             topRight: Radius.circular(35)),
         ),
-        backgroundColor: data[index]["color"],
+        backgroundColor: data[index!]["color"],
 
         onPressed: (){
           listBuilder();
           setState(() {
-            Name = topic[index];
-            print(check.contains((topic[index])));
+            Name = topic[index!];
+            print(check.contains((topic[index!])));
           });
         },
     );
-_checkInternetConnectivity();
-    return internetCheck?AdvanceCustomAlertInternet():loading?Loading():Scaffold(
+    return internetCheck == false ?AdvanceCustomAlertInternet():loading?Loading():Scaffold(
       appBar: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle.dark,
         leading: IconButton(icon:Icon(Icons.arrow_back,color: Colors.white,),
           onPressed: () {
             Navigator.of(context).pop();
           },),
-      backgroundColor: data[index]["color"],
+      backgroundColor: data[index!]["color"],
       elevation: 0,),
             body: loading?Loading():Container(
               height: height,
      color: Colors.white,
      child: NotificationListener<OverscrollIndicatorNotification>(
        onNotification: (OverscrollIndicatorNotification overscrollIndicatorNotification){
-         overscrollIndicatorNotification.disallowGlow();
-         return;
+         overscrollIndicatorNotification.disallowIndicator();
+         return true;
        },
        child: SingleChildScrollView(
          child: Column(
            children: <Widget>[
                  Hero(
-                   tag: topic[index],
+                   tag: topic[index!],
                    child: ClipPath(
                       clipper: MyClipper() ,
                      child:Container(
                        height: MediaQuery.of(context).size.height/3,
                        width: MediaQuery.of(context).size.width,
-                       color: data[index]["color"],
+                       color: data[index!]["color"],
                        child: Padding(
                          padding: EdgeInsets.only(right:width/30,left: width/10,top: height/30, bottom: height/90),
                          child: Column(
                            mainAxisAlignment: MainAxisAlignment.start,
                            crossAxisAlignment: CrossAxisAlignment.start,
                            children: [
-                             Text(topic[index],style:
+                             Text(topic[index!],style:
                              TextStyle(
                              fontStyle: FontStyle.normal,
                              letterSpacing: 1.1,
@@ -2319,6 +2322,7 @@ _checkInternetConnectivity();
                              SizedBox(height: 20,),
                              GestureDetector(
                                onTap: (){
+                                
                                  _launchURLBrowser();
                                },
                                child: Container(
@@ -2374,7 +2378,7 @@ _checkInternetConnectivity();
              SizedBox(height: height/60),
              Padding(
                padding: EdgeInsets.only(right:width/30,left: width/30),
-               child: Text(definition[index]["definition"],style: TextStyle(
+               child: Text(definition[index!]["definition"],style: TextStyle(
                    color: Colors.black,
                    fontSize: 20
                ),),
@@ -2398,42 +2402,42 @@ _checkInternetConnectivity();
                padding: EdgeInsets.only(right:width/30,left: width/30),
                child: Container(
                  alignment: Alignment.centerLeft,
-                 child: Text(example[index]["example"],style:
+                 child: Text(example[index!]["example"],style:
                  TextStyle(
                    letterSpacing: 1.1,
                    fontSize: 18,
-                   color: data[index]["color"],
+                   color: data[index!]["color"],
                    fontWeight: FontWeight.bold
                  ),),
                ),
              ),
              SizedBox(height: 40),
-                 if(index<topic.indexOf('Dynamic Programming'))Padding(
+                 if(index! < topic.indexOf('Dynamic Programming'))Padding(
                    padding: EdgeInsets.only(right:width/30,left: width/30),
                    child: Container(
                      width: width,
                      decoration: BoxDecoration(
                        border: Border.all(
-                         color: data[index]["color"],
+                         color: data[index!]["color"],
                        ),
                        borderRadius: BorderRadius.circular(20)
                      ),
                      child: Padding(
                        padding: const EdgeInsets.all(20.0),
-                       child: Text(code[index],style: TextStyle(
+                       child: Text(code[index!],style: TextStyle(
                            color: Colors.black,
                            fontSize: 20
                        ),),
                      ),
                    ),
                  ),
-                 if(index<topic.indexOf('Dynamic Programming'))SizedBox(height: height/60),
-                 if(index<topic.indexOf('Dynamic Programming'))Padding(
+                 if(index! <topic.indexOf('Dynamic Programming'))SizedBox(height: height/60),
+                 if(index! <topic.indexOf('Dynamic Programming'))Padding(
                    padding: EdgeInsets.only(right:width/30,left: width/30),
                    child: Container(
                      width: width,
                      decoration: BoxDecoration(
-                         color: data[index]["color"],
+                         color: data[index!]["color"],
                          borderRadius: BorderRadius.circular(20)
                      ),
                      child: Column(
@@ -2455,7 +2459,7 @@ _checkInternetConnectivity();
                            padding: const EdgeInsets.only(left:20.0,right: 20,top: 20),
                            child: Padding(
                              padding: const EdgeInsets.only(top:10.0,left: 10,right: 10,bottom: 30),
-                             child: Text(output[index],style: TextStyle(
+                             child: Text(output[index!],style: TextStyle(
                                  color: Colors.white,
                                  fontSize: 20
                              ),),
@@ -2483,7 +2487,7 @@ _checkInternetConnectivity();
              Padding(
                padding: EdgeInsets.only(right:width/30,left: width/30,top: height/90, bottom: 50),
                child: Container(
-                 child: Text(information[index]["info"],style: TextStyle(
+                 child: Text(information[index!]["info"],style: TextStyle(
                      color: Colors.black,
                      fontSize: 20
                  ),
@@ -2515,7 +2519,6 @@ SettingSharedPrefs()async{
 }
 
 class InfoProvider extends StatefulWidget {
-  const InfoProvider({Key key}) : super(key: key);
 
   @override
   _InfoProviderState createState() => _InfoProviderState();

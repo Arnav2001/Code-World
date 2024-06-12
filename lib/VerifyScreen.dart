@@ -15,14 +15,14 @@ class VerifyScreen extends StatefulWidget {
 
 class _VerifyScreenState extends State<VerifyScreen> {
   final auth =FirebaseAuth.instance;
-  User user;
-  Timer timer;
+  User? user;
+  Timer? timer;
 
 
   @override
   void initState(){
     user = auth.currentUser;
-    user.sendEmailVerification();
+    user!.sendEmailVerification();
 
     timer = Timer.periodic(Duration(seconds: 3), (timer) {
       checkEmailVerified();
@@ -33,7 +33,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
 
   @override
   void dispose() {
-    timer.cancel();
+    timer!.cancel();
     super.dispose();
   }
 
@@ -41,7 +41,6 @@ class _VerifyScreenState extends State<VerifyScreen> {
   @override
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
-    var width = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: Palette.darkOrange,
       body: Padding(
@@ -60,7 +59,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
             SizedBox(height: 50,),
             Container(
               alignment: Alignment.center,
-              child: Text('A verification email has been sent to ${user.email} verify it.',
+              child: Text('A verification email has been sent to ${user!.email} verify it.',
                 style: TextStyle(color: Colors.white,fontSize: 20.0),textAlign: TextAlign.center,),
             ),
             SizedBox(height:height/5,),
@@ -82,22 +81,22 @@ class _VerifyScreenState extends State<VerifyScreen> {
 
   Future <void> checkEmailVerified() async {
     user = auth.currentUser;
-    await user.reload();
+    await user!.reload();
     var firebaseUser = FirebaseAuth.instance.currentUser;
     final firestoreInstance = FirebaseFirestore.instance;
     bool isVerified = true;
-    if(user.emailVerified){
+    if(user!.emailVerified){
       firestoreInstance.collection("userInfo")
-          .doc(firebaseUser.uid)
+          .doc(firebaseUser!.uid)
           .update({'isVerified': isVerified }).then((_) => print("Success"));
-      timer.cancel();
+      timer!.cancel();
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setBool('remember', true);
       print('email is verified');
       Navigator.of(context)
           .pushReplacement(MaterialPageRoute(builder: (context) => HomePage()));
     }
-    print('this is user: ${user.sendEmailVerification()}');
+    print('this is user: ${user!.sendEmailVerification()}');
 
   }
 }
