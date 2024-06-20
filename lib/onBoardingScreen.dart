@@ -17,7 +17,8 @@ class OnBoardingPage extends StatelessWidget {
           body: 'First, solve the problem. Then, write the code.',
           image: CircleAvatar(
               backgroundColor: Colors.white,
-              child:Image(image: AssetImage('assets/education.png'),width: 200,height: 200,)),
+              child:Image(image: AssetImage('assets'
+                  '/education.png'),width: 200,height: 200,)),
           decoration: getPageDecoration(),
         ),
         PageViewModel(
@@ -77,7 +78,6 @@ class OnBoardingPage extends StatelessWidget {
     activeColor: Colors.white,
     activeShape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(24),
-
     ),
   );
 

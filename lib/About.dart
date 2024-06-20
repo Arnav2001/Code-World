@@ -55,7 +55,7 @@ class _AboutState extends State<About> {
                 child: Padding(
                   padding: const EdgeInsets.only(right:15.0),
                   child: Container(
-                    child: Text('Version 2.0',
+                    child: Text('Version 4.1.0',
                       textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.grey
